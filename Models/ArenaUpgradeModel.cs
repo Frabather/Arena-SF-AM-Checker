@@ -2,7 +2,7 @@
 
 namespace Arena_SF_AM_Checker.Models
 {
-    public class MyEntity
+    public class ArenaUpgradeModel
     {
         [Key]
         public int Id { get; set; }

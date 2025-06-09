@@ -1,19 +1,23 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Arena_SF_AM_Checker
 {
-    public partial class Form1 : Form
+    public partial class Underground_Upgrade_List : Form
     {
         private DatabaseHelper _db;
-
-        public Form1()
+        public Underground_Upgrade_List()
         {
             InitializeComponent();
             _db = new DatabaseHelper();
 
-            // Konfiguracja DataGridView
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
             dataGridView1.CurrentCellDirtyStateChanged += DataGridView1_CurrentCellDirtyStateChanged;
             dataGridView1.RowPrePaint += dataGridView1_RowPrePaint;
@@ -28,7 +32,7 @@ namespace Arena_SF_AM_Checker
 
         private void LoadData()
         {
-            var data = _db.GetAllArena().ToList();
+            var data = _db.GetAllUnderground().ToList();
             dataGridView1.DataSource = data;
 
             if (dataGridView1.Columns["Id"] != null)
@@ -68,12 +72,12 @@ namespace Arena_SF_AM_Checker
                         if (!(bool)row.Cells["IsChecked"].Value)
                         {
                             row.Cells["IsChecked"].Value = true;
-                            _db.UpdateCheckedArena((int)row.Cells["Id"].Value, true);
+                            _db.UpdateCheckedUnderground((int)row.Cells["Id"].Value, true);
                         }
                     }
                 }
 
-                _db.UpdateCheckedArena((int)changedRow.Cells["Id"].Value, isNowChecked);
+                _db.UpdateCheckedUnderground((int)changedRow.Cells["Id"].Value, isNowChecked);
             }
         }
 
@@ -92,16 +96,10 @@ namespace Arena_SF_AM_Checker
             {
                 int id = (int)row.Cells["Id"].Value;
 
-                _db.UpdateCheckedArena(id, false);
+                _db.UpdateCheckedUnderground(id, false);
 
                 LoadData();
             }
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            var otherForm = new OtherTools();
-            otherForm.Show();
         }
     }
 }
