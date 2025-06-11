@@ -100,7 +100,11 @@ namespace Arena_SF_AM_Checker
 
         private void button2_Click(object sender, EventArgs e)
         {
-            var otherForm = new OtherTools();
+            var otherForm = new OtherTools
+            {
+                StartPosition = FormStartPosition.Manual,
+                Location = new Point(this.Location.X + 50, this.Location.Y + 50)
+            };
             otherForm.Show();
         }
     }

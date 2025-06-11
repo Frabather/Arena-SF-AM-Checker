@@ -19,7 +19,11 @@ namespace Arena_SF_AM_Checker
 
         private void button1_Click(object sender, EventArgs e)
         {
-            var undergroundform = new Underground_Upgrade_List();
+            var undergroundform = new Underground_Upgrade_List
+            {
+                StartPosition = FormStartPosition.Manual,
+                Location = new Point(this.Location.X + 50, this.Location.Y + 50)
+            };
             undergroundform.Show();
             this.Close();
         }
