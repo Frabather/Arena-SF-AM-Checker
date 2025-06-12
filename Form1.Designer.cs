@@ -19,6 +19,10 @@ namespace Arena_SF_AM_Checker
             button2 = new Button();
             label1 = new Label();
             label2 = new Label();
+            label3 = new Label();
+            lastSacrificeDate = new Label();
+            label4 = new Label();
+            sinceLastLabel = new Label();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             SuspendLayout();
             // 
@@ -34,12 +38,14 @@ namespace Arena_SF_AM_Checker
             // 
             // button1
             // 
+            button1.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            button1.ForeColor = Color.Red;
             button1.Location = new Point(279, 58);
             button1.Margin = new Padding(2);
             button1.Name = "button1";
             button1.Size = new Size(150, 46);
             button1.TabIndex = 1;
-            button1.Text = "Uncheck All";
+            button1.Text = "SACRIFICE";
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
             // 
@@ -73,11 +79,53 @@ namespace Arena_SF_AM_Checker
             label2.TabIndex = 4;
             label2.Text = "Arena Manager Upgrade List";
             // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.ForeColor = Color.FromArgb(0, 0, 192);
+            label3.Location = new Point(309, 118);
+            label3.Name = "label3";
+            label3.Size = new Size(78, 15);
+            label3.TabIndex = 5;
+            label3.Text = "Last Sacrifice:";
+            // 
+            // lastSacrificeDate
+            // 
+            lastSacrificeDate.AutoSize = true;
+            lastSacrificeDate.Location = new Point(309, 148);
+            lastSacrificeDate.Name = "lastSacrificeDate";
+            lastSacrificeDate.Size = new Size(91, 15);
+            lastSacrificeDate.TabIndex = 6;
+            lastSacrificeDate.Text = "Never sacrificed";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.ForeColor = Color.FromArgb(0, 0, 192);
+            label4.Location = new Point(309, 181);
+            label4.Name = "label4";
+            label4.Size = new Size(105, 15);
+            label4.TabIndex = 7;
+            label4.Text = "Since last sacrifice:";
+            // 
+            // sinceLastLabel
+            // 
+            sinceLastLabel.AutoSize = true;
+            sinceLastLabel.Location = new Point(309, 216);
+            sinceLastLabel.Name = "sinceLastLabel";
+            sinceLastLabel.Size = new Size(91, 15);
+            sinceLastLabel.TabIndex = 8;
+            sinceLastLabel.Text = "Never sacrificed";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(433, 637);
+            Controls.Add(sinceLastLabel);
+            Controls.Add(label4);
+            Controls.Add(lastSacrificeDate);
+            Controls.Add(label3);
             Controls.Add(label2);
             Controls.Add(label1);
             Controls.Add(button2);
@@ -94,5 +142,9 @@ namespace Arena_SF_AM_Checker
         private Button button2;
         private Label label1;
         private Label label2;
+        private Label label3;
+        private Label lastSacrificeDate;
+        private Label label4;
+        private Label sinceLastLabel;
     }
 }

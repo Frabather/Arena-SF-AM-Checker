@@ -54,6 +54,13 @@ namespace Arena_SF_AM_Checker
                     IsChecked INTEGER NOT NULL
                 );
             ");
+
+            conn.Execute(@"
+                CREATE TABLE IF NOT EXISTS LastSacrificeDate (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    LastSacrifice DateTime
+                );
+            ");
         }
 
 
@@ -110,6 +117,14 @@ namespace Arena_SF_AM_Checker
                 }
             }
 
+
+
+            var countDate = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM LastSacrificeDate");
+            if (countDate == 0)
+            {
+                conn.Execute("INSERT INTO LastSacrificeDate (LastSacrifice) VALUES (NULL)");
+            }
+
         }
 
 
@@ -135,6 +150,18 @@ namespace Arena_SF_AM_Checker
         {
             using var conn = new SQLiteConnection(_connectionString);
             conn.Execute("UPDATE UndergroundUpgrades SET IsChecked = @isChecked WHERE Id = @id", new { id, isChecked });
+        }
+
+        public void UpdateLastSacrificeDate()
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            conn.Execute("UPDATE LastSacrificeDate SET LastSacrifice = @now WHERE Id = 1", new { now = DateTime.Now });
+        }
+
+        public IEnumerable<LastSacrificeDateModel> SelectLastSacrificeDate()
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            return conn.Query<LastSacrificeDateModel>("SELECT LastSacrifice FROM LastSacrificeDate ORDER BY LastSacrifice DESC LIMIT 1");
         }
     }
 }

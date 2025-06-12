@@ -7,6 +7,7 @@ namespace Arena_SF_AM_Checker
     public partial class Form1 : Form
     {
         private DatabaseHelper _db;
+        private System.Windows.Forms.Timer _timer;
 
         public Form1()
         {
@@ -22,8 +23,25 @@ namespace Arena_SF_AM_Checker
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
 
+            _timer = new System.Windows.Forms.Timer();
+            _timer.Interval = 1000;
+            _timer.Tick += Timer_Tick;
+            Timer_Tick(null, EventArgs.Empty);
+            _timer.Start();                   
+
+
             LoadData();
             AdjustFormWidthToDataGrid();
+
+            var isLastSacrificeDate = _db.SelectLastSacrificeDate().FirstOrDefault().LastSacrifice.ToString("yyyy-MM-dd HH:mm");
+            if (isLastSacrificeDate != "0001-01-01 00:00")
+            {
+                lastSacrificeDate.Text = isLastSacrificeDate;
+            }
+            else
+            {
+                lastSacrificeDate.Text = "Never sacrificed";
+            }
         }
 
         private void LoadData()
@@ -95,6 +113,9 @@ namespace Arena_SF_AM_Checker
                 _db.UpdateCheckedArena(id, false);
 
                 LoadData();
+
+                _db.UpdateLastSacrificeDate();
+                lastSacrificeDate.Text = _db.SelectLastSacrificeDate().FirstOrDefault().LastSacrifice.ToString("yyyy-MM-dd HH:mm");
             }
         }
 
@@ -107,5 +128,28 @@ namespace Arena_SF_AM_Checker
             };
             otherForm.Show();
         }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            var sacrifice = _db.SelectLastSacrificeDate().FirstOrDefault();
+
+            if (sacrifice != null && lastSacrificeDate.Text != "Never sacrificed")
+            {
+                var diff = DateTime.Now - sacrifice.LastSacrifice;
+               
+                int hours = (int)diff.TotalHours;
+                int minutes = diff.Minutes;
+                int seconds = diff.Seconds;
+                
+                sinceLastLabel.Text = $"{hours}h {minutes}m {seconds}s";
+
+                //sinceLastLabel.Text = lastSacrificeDate.Text;
+            }
+            else
+            {
+                sinceLastLabel.Text = "Never sacrificed";
+            }
+        }
+
     }
 }
