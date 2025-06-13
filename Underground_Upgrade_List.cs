@@ -92,14 +92,28 @@ namespace Arena_SF_AM_Checker
 
         private void button1_Click(object sender, EventArgs e)
         {
-            foreach (DataGridViewRow row in dataGridView1.Rows)
+
+            Point location = this.Location;
+            location.Offset(50, 50);
+
+            var confirmResult = ConfirmDialog.ShowDialogAt(
+                "Are you sure you want to reset all Underground upgrades?",
+                location
+            );
+
+            if (confirmResult == DialogResult.Yes)
             {
-                int id = (int)row.Cells["Id"].Value;
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    int id = (int)row.Cells["Id"].Value;
 
-                _db.UpdateCheckedUnderground(id, false);
+                    _db.UpdateCheckedUnderground(id, false);
 
-                LoadData();
+                    LoadData();
+                }
             }
+
+            
         }
     }
 }

@@ -106,16 +106,27 @@ namespace Arena_SF_AM_Checker
 
         private void button1_Click(object sender, EventArgs e)
         {
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-            {
-                int id = (int)row.Cells["Id"].Value;
+            Point location = this.Location;
+            location.Offset(50, 50);
 
-                _db.UpdateCheckedArena(id, false);
+            var confirmResult = ConfirmDialog.ShowDialogAt(
+                "Are you sure you want to reset all Arena upgrades?",
+                location
+            );
+
+            if (confirmResult == DialogResult.Yes)
+            {
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    int id = (int)row.Cells["Id"].Value;
+                    _db.UpdateCheckedArena(id, false);
+                }
 
                 LoadData();
-
                 _db.UpdateLastSacrificeDate();
-                lastSacrificeDate.Text = _db.SelectLastSacrificeDate().FirstOrDefault().LastSacrifice.ToString("yyyy-MM-dd HH:mm");
+                lastSacrificeDate.Text = _db.SelectLastSacrificeDate()
+                    .FirstOrDefault()
+                    .LastSacrifice.ToString("yyyy-MM-dd HH:mm");
             }
         }
 
@@ -142,8 +153,6 @@ namespace Arena_SF_AM_Checker
                 int seconds = diff.Seconds;
                 
                 sinceLastLabel.Text = $"{hours}h {minutes}m {seconds}s";
-
-                //sinceLastLabel.Text = lastSacrificeDate.Text;
             }
             else
             {
