@@ -12,7 +12,6 @@ namespace Arena_SF_AM_Checker
 
         public DatabaseHelper()
         {
-            // Ścisłe wskazanie katalogu z plikiem EXE (nawet po PublishSingleFile)
             var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
             var dbPath = Path.Combine(Path.GetDirectoryName(exePath!)!, "data.db");
             _connectionString = $"Data Source={dbPath};Version=3;";
@@ -59,6 +58,21 @@ namespace Arena_SF_AM_Checker
                 CREATE TABLE IF NOT EXISTS LastSacrificeDate (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     LastSacrifice DateTime
+                );
+            ");
+
+            conn.Execute(@"
+                CREATE TABLE IF NOT EXISTS AppConfiguration (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ParamName TEXT,
+                    FlgStatus INTEGER NOT NULL
+                );
+            ");
+
+            conn.Execute(@"
+                CREATE TABLE IF NOT EXISTS TwitchDropStatus (
+                    DropDate TEXT PRIMARY KEY,
+                    IsDone INTEGER NOT NULL
                 );
             ");
         }
@@ -125,6 +139,29 @@ namespace Arena_SF_AM_Checker
                 conn.Execute("INSERT INTO LastSacrificeDate (LastSacrifice) VALUES (NULL)");
             }
 
+            ///////////////////// Parameters
+
+            var countParam = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM AppConfiguration");
+            if (countParam == 0)
+            {
+                conn.Execute("INSERT INTO AppConfiguration (ParamName, FlgStatus) VALUES ('TwitchDropNotification', 1)");
+            }
+
+        }
+
+        public bool IsTwitchNotificationEnabled()
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            return conn.ExecuteScalar<int>(
+                "SELECT FlgStatus FROM AppConfiguration WHERE ParamName = 'TwitchDropNotification' LIMIT 1"
+            ) == 1;
+        }
+
+        public void UpdateTwitchNotification(int id, int FlgStatus)
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            conn.Execute("UPDATE AppConfiguration SET FlgStatus = @FlgStatus WHERE Id = @id", new { id, FlgStatus });
+
         }
 
 
@@ -162,6 +199,66 @@ namespace Arena_SF_AM_Checker
         {
             using var conn = new SQLiteConnection(_connectionString);
             return conn.Query<LastSacrificeDateModel>("SELECT LastSacrifice FROM LastSacrificeDate ORDER BY LastSacrifice DESC LIMIT 1");
+        }
+
+        public bool IsDropDone(DateTime dropDate)
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            return conn.ExecuteScalar<int>(
+                "SELECT IsDone FROM TwitchDropStatus WHERE DropDate = @DropDate",
+                new { DropDate = dropDate.ToString("yyyy-MM-dd HH:mm") }
+            ) == 1;
+        }
+
+        public void MarkDropAsDone(DateTime dropDate)
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            conn.Execute(@"
+            INSERT INTO TwitchDropStatus (DropDate, IsDone)
+            VALUES (@DropDate, 1)
+            ON CONFLICT(DropDate) DO UPDATE SET IsDone = 1",
+                    new { DropDate = dropDate.ToString("yyyy-MM-dd HH:mm") });
+        }
+
+        public void EnsureDropExists(DateTime dropDate)
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            var count = conn.ExecuteScalar<int>(
+                "SELECT COUNT(*) FROM TwitchDropStatus WHERE DropDate = @DropDate",
+                new { DropDate = dropDate.ToString("yyyy-MM-dd HH:mm") }
+            );
+
+            if (count == 0)
+            {
+                conn.Execute(
+                    "INSERT INTO TwitchDropStatus (DropDate, IsDone) VALUES (@DropDate, 0)",
+                    new { DropDate = dropDate.ToString("yyyy-MM-dd HH:mm") }
+                );
+            }
+        }
+
+        public void ResetCurrentWeekDrops()
+        {
+            var currentWeekDrops = new List<DateTime>
+            {
+                GetNextWeekday(DayOfWeek.Monday),
+                GetNextWeekday(DayOfWeek.Wednesday),
+                GetNextWeekday(DayOfWeek.Friday)
+            };
+
+            using var conn = new SQLiteConnection(_connectionString);
+            foreach (var dropDate in currentWeekDrops)
+            {
+                conn.Execute("UPDATE TwitchDropStatus SET IsDone = 0 WHERE DropDate = @DropDate",
+                    new { DropDate = dropDate.ToString("yyyy-MM-dd HH:mm") });
+            }
+
+            DateTime GetNextWeekday(DayOfWeek targetDat)
+            {
+                var today = DateTime.Today;
+                int diff = (int)targetDat - (int)today.DayOfWeek;
+                return today.AddDays(diff).AddHours(16);
+            }
         }
     }
 }
