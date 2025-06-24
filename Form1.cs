@@ -27,6 +27,28 @@ namespace Arena_SF_AM_Checker
             buttonSettings.Size = new Size(75, 75);
             buttonSettings.FlatStyle = FlatStyle.Flat;
 
+            buttonSettings.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonSettings.Location = new Point(this.ClientSize.Width - buttonSettings.Width - 10, 10);
+
+            this.Resize += (s, e) =>
+            {
+                buttonSettings.Location = new Point(this.ClientSize.Width - buttonSettings.Width - 10, 10);
+            };
+
+            lblFrabather.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            lblFrabather.Location = new Point(
+                this.ClientSize.Width - lblFrabather.Width - 10,
+                this.ClientSize.Height - lblFrabather.Height - 10
+            );
+
+            this.Resize += (s, e) =>
+            {
+                lblFrabather.Location = new Point(
+                    this.ClientSize.Width - lblFrabather.Width - 10,
+                    this.ClientSize.Height - lblFrabather.Height - 10
+                );
+            };
+
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
             dataGridView1.CurrentCellDirtyStateChanged += DataGridView1_CurrentCellDirtyStateChanged;
             dataGridView1.RowPrePaint += dataGridView1_RowPrePaint;
@@ -43,7 +65,7 @@ namespace Arena_SF_AM_Checker
 
 
             LoadData();
-            AdjustFormWidthToDataGrid();
+            
 
             var isLastSacrificeDate = _db.SelectLastSacrificeDate().FirstOrDefault().LastSacrifice.ToString("yyyy-MM-dd HH:mm");
             if (isLastSacrificeDate != "0001-01-01 00:00")
@@ -68,6 +90,7 @@ namespace Arena_SF_AM_Checker
             }
 
             InitializeTwitchDrops();
+            AdjustFormWidthToDataGrid();
         }
 
         private void InitializeTwitchDrops()
@@ -117,8 +140,6 @@ namespace Arena_SF_AM_Checker
 
             dataGridViewTwitchDrops.CurrentCellDirtyStateChanged -= DataGridViewTwitchDrops_CurrentCellDirtyStateChanged;
             dataGridViewTwitchDrops.CurrentCellDirtyStateChanged += DataGridViewTwitchDrops_CurrentCellDirtyStateChanged;
-
-            AdjustFormWidthToDataGrid();
         }
 
 
@@ -187,17 +208,60 @@ namespace Arena_SF_AM_Checker
 
         private void AdjustFormWidthToDataGrid()
         {
-            int margin = 80;
+            this.PerformLayout();
+            this.Refresh();
 
+            int margin = 80;
+            
             int arenaWidth = dataGridView1.Location.X + dataGridView1.Width;
-            int twitchWidth = dataGridViewTwitchDrops.Visible
-                ? dataGridViewTwitchDrops.Location.X + dataGridViewTwitchDrops.Width
-                : 0;
+            int twitchWidth = dataGridViewTwitchDrops.Location.X + (dataGridViewTwitchDrops.Visible ? dataGridViewTwitchDrops.Width : 0);
 
             int requiredWidth = Math.Max(arenaWidth, twitchWidth) + margin;
-
+            
             if (this.Width < requiredWidth)
+            {
                 this.Width = requiredWidth;
+            }
+
+            Debug.WriteLine($"Arena: {arenaWidth}, Twitch: {twitchWidth}, Required: {requiredWidth}, Form: {this.Width}");
+
+
+
+            /// adjust dataGridViewTwitchDrops size
+
+            if (dataGridViewTwitchDrops.Rows.Count == 0) return;
+
+            int totalRowHeight = 0;
+            foreach (DataGridViewRow row in dataGridViewTwitchDrops.Rows)
+            {
+                if (row.Visible)
+                    totalRowHeight += row.Height;
+            }
+
+            int headerHeight = dataGridViewTwitchDrops.ColumnHeadersHeight;
+
+            int totalColumnWidth = 0;
+            foreach (DataGridViewColumn col in dataGridViewTwitchDrops.Columns)
+            {
+                if (col.Visible)
+                    totalColumnWidth += col.Width;
+            }
+
+            int scrollbarPadding = SystemInformation.HorizontalScrollBarHeight;
+
+            dataGridViewTwitchDrops.Height = totalRowHeight + headerHeight + 2;
+            dataGridViewTwitchDrops.Width = totalColumnWidth + dataGridViewTwitchDrops.RowHeadersWidth + scrollbarPadding;
+
+            ///// run all twitch button
+            ///
+
+            if (buttonTwitchTV.Visible)
+            {
+                buttonTwitchTV.Location = new Point(
+                    dataGridViewTwitchDrops.Right - buttonTwitchTV.Width + 50,
+                    dataGridViewTwitchDrops.Bottom + 10
+                );
+            }
         }
 
         private void DataGridView1_CurrentCellDirtyStateChanged(object sender, EventArgs e)
@@ -344,5 +408,6 @@ namespace Arena_SF_AM_Checker
 
             buttonTwitchTV.Enabled = true;
         }
+
     }
 }

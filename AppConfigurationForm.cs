@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
 using System.Drawing.Text;
 using System.Linq;
@@ -18,6 +19,9 @@ namespace Arena_SF_AM_Checker
         {
             InitializeComponent();
             _db = new DatabaseHelper();
+
+            BtnToBeLine.Enabled = false;
+            BtnToBeLine2.Enabled = false;
 
             twichDropNotificationToggle.Appearance = Appearance.Button;
             twichDropNotificationToggle.AutoSize = false;
@@ -63,7 +67,23 @@ namespace Arena_SF_AM_Checker
 
             if (confirmResult == DialogResult.Yes)
             {
-                _db.ResetCurrentWeekDrops();                
+                _db.ResetCurrentWeekDrops();
+            }
+        }
+
+        private void undergroundResetBtn_Click(object sender, EventArgs e)
+        {
+            Point location = this.Location;
+            location.Offset(50, 50);
+
+            var confirmResult = ConfirmDialog.ShowDialogAt(
+                "Are you sure you want to reset underground items?",
+                location
+            );
+
+            if (confirmResult == DialogResult.Yes)
+            {
+                _db.ResetAllUndergroundItems();
             }
         }
     }

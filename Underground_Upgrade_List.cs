@@ -103,17 +103,38 @@ namespace Arena_SF_AM_Checker
 
             if (confirmResult == DialogResult.Yes)
             {
+                var allChecked = true;
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    bool isChecked = (bool)row.Cells["IsChecked"].Value;
+                    if (!isChecked)
+                    {
+                        allChecked = false;
+                        break;
+                    }
+                }
+
+                if (allChecked)
+                {
+                    var confirmResultAll = ConfirmDialog.ShowDialogAt(
+                        "You're able to increment all uprades levels. Do you want to proceed?",
+                        location
+                    );
+                    if (confirmResultAll == DialogResult.Yes)
+                    {
+                        _db.IncrementUndergroundUpgradeNumbersIfAllChecked();
+                    }
+                    
+                }
+
                 foreach (DataGridViewRow row in dataGridView1.Rows)
                 {
                     int id = (int)row.Cells["Id"].Value;
-
                     _db.UpdateCheckedUnderground(id, false);
-
-                    LoadData();
                 }
-            }
 
-            
+                LoadData();
+            }
         }
     }
 }

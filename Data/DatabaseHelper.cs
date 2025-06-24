@@ -189,6 +189,59 @@ namespace Arena_SF_AM_Checker
             conn.Execute("UPDATE UndergroundUpgrades SET IsChecked = @isChecked WHERE Id = @id", new { id, isChecked });
         }
 
+        public void ResetAllUndergroundItems()
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+
+            conn.ExecuteScalar<int>("DELETE FROM UndergroundUpgrades");
+
+            var names2 = new[]
+            {
+            "Heart 1", "Extractor 1", "Goblin 1", "Heart 2", "Gate 1", "Gate 2", "Extractor 2", "Heart 3", "Extractor 3", "Gate 3", "Torture 1", "Heart 4",
+            "Extractor 4", "Gate 4", "Gladiator 1", "Heart 5", "Extractor 5", "Gate 5", "Keeper 1", "Keeper 2", "Keeper 3", "Adventure 1", "Torture 2",
+            "Adventure 2", "Gladiator 2", "Gladiator 3", "Torture 3", "Heart 6", "Extractor 6", "Gate 6", "Keeper 4", "Gladiator 4", "Gladiator 5",
+            "Adventure 3", "Adventure 4", "Torture 4", "Goldpit 1", "Goldpit 2", "Goldpit 3", "Goldpit 4", "Goldpit 5", "Heart 7", "Extractor 7", "Gate 7",
+            "Gladiator 6", "Adventure 5", "Torture 5", "Keeper 5", "Heart 8", "Extractor 8", "Gate 8", "Torture 6", "Goldpit 6", "Keeper 6", "Adventure 6",
+            "Heart 9", "Extractor 9", "Gate 9", "Torture 7", "Goldpit 7", "Keeper 7", "Adventure 7", "Heart 10", "Extractor 10", "Gate 10"
+            };
+
+            foreach (var name in names2)
+            {
+                conn.Execute("INSERT INTO UndergroundUpgrades (Name, IsChecked) VALUES (@Name, 0)", new { Name = name });
+            }
+        }
+
+        public void IncrementUndergroundUpgradeNumbersIfAllChecked()
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            conn.Open();
+
+            var allUpgrades = conn.Query<(int Id, string Name, int IsChecked)>("SELECT Id, Name, IsChecked FROM UndergroundUpgrades").ToList();
+
+            if (allUpgrades.All(u => u.IsChecked == 1))
+            {
+                var grouped = allUpgrades
+                    .Select(u =>
+                    {
+                        var parts = u.Name.Split(' ');
+                        var baseName = string.Join(" ", parts.Take(parts.Length - 1));
+                        var level = int.TryParse(parts.Last(), out var lvl) ? lvl : 1;
+                        return new { u.Id, BaseName = baseName, Level = level };
+                    })
+                    .GroupBy(x => x.BaseName);
+
+                foreach (var group in grouped)
+                {
+                    int newLevel = group.Max(g => g.Level) + 1;
+                    foreach (var item in group.OrderBy(g => g.Level))
+                    {
+                        string newName = $"{item.BaseName} {newLevel++}";
+                        conn.Execute("UPDATE UndergroundUpgrades SET Name = @Name WHERE Id = @Id", new { Name = newName, Id = item.Id });
+                    }
+                }
+            }
+        }
+
         public void UpdateLastSacrificeDate()
         {
             using var conn = new SQLiteConnection(_connectionString);
