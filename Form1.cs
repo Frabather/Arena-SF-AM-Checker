@@ -84,14 +84,41 @@ namespace Arena_SF_AM_Checker
             var data = _db.GetAllArena().ToList();
             dataGridView1.DataSource = data;
 
+            dataGridView1.RowHeadersVisible = false;
+
             if (dataGridView1.Columns["Id"] != null)
             {
                 dataGridView1.Columns["Id"].Visible = false;
+                dataGridView1.Columns["Id"].Width = 1;
+                dataGridView1.Columns["Id"].ReadOnly = true;
+            }
+
+            if (dataGridView1.Columns["Name"] != null)
+            {
+                dataGridView1.Columns["Name"].HeaderText = "Name";
+                dataGridView1.Columns["Name"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dataGridView1.Columns["Name"].DisplayIndex = 0;
+                dataGridView1.Columns["Name"].ReadOnly = true;
+            }
+
+            if (dataGridView1.Columns["IsChecked"] != null)
+            {
+                dataGridView1.Columns["IsChecked"].HeaderText = "IsChecked";
+                dataGridView1.Columns["IsChecked"].Width = 80;
+                dataGridView1.Columns["IsChecked"].DisplayIndex = 1;
+            }
+
+            if (dataGridView1.Columns["IsHidden"] != null)
+            {
+                dataGridView1.Columns["IsHidden"].HeaderText = "Is Hidden";
+                dataGridView1.Columns["IsHidden"].Width = 80;
+                dataGridView1.Columns["IsHidden"].DisplayIndex = 2;
             }
 
             InitializeTwitchDrops();
             AdjustFormWidthToDataGrid();
         }
+
 
         private void InitializeTwitchDrops()
         {
@@ -164,6 +191,14 @@ namespace Arena_SF_AM_Checker
             };
         }
 
+        private DateTime GetDropsWeekEnd()
+        {
+            var today = DateTime.Today;
+            int daysUntilSunday = ((int)DayOfWeek.Sunday - (int)today.DayOfWeek + 7) % 7;
+            return today.AddDays(daysUntilSunday).Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+        }
+
+
         private void DataGridViewTwitchDrops_CurrentCellDirtyStateChanged(object sender, EventArgs e)
         {
             if (dataGridViewTwitchDrops.IsCurrentCellDirty)
@@ -198,13 +233,6 @@ namespace Arena_SF_AM_Checker
             }
         }
 
-
-        private DateTime GetDropsWeekEnd()
-        {
-            var today = DateTime.Today;
-            int daysUntilSunday = ((int)DayOfWeek.Sunday - (int)today.DayOfWeek + 7) % 7;
-            return today.AddDays(daysUntilSunday).Date.AddHours(23).AddMinutes(59).AddSeconds(59);
-        }
 
         private void AdjustFormWidthToDataGrid()
         {
@@ -274,13 +302,17 @@ namespace Arena_SF_AM_Checker
         {
             if (e.ColumnIndex < 0 || e.RowIndex < 0) return;
 
-            if (dataGridView1.Columns[e.ColumnIndex].Name == "IsChecked")
+            var columnName = dataGridView1.Columns[e.ColumnIndex].Name;
+            var changedRow = dataGridView1.Rows[e.RowIndex];
+            int id = (int)changedRow.Cells["Id"].Value;
+
+            if (columnName == "IsChecked")
             {
-                var changedRow = dataGridView1.Rows[e.RowIndex];
                 bool isNowChecked = (bool)changedRow.Cells["IsChecked"].Value;
 
                 if (isNowChecked)
                 {
+                    // Zaznacz wszystkie wczeœniejsze
                     for (int i = 0; i < e.RowIndex; i++)
                     {
                         var row = dataGridView1.Rows[i];
@@ -292,7 +324,12 @@ namespace Arena_SF_AM_Checker
                     }
                 }
 
-                _db.UpdateCheckedArena((int)changedRow.Cells["Id"].Value, isNowChecked);
+                _db.UpdateCheckedArena(id, isNowChecked);
+            }
+            else if (columnName == "IsHidden")
+            {
+                bool isNowHidden = (bool)changedRow.Cells["IsHidden"].Value;
+                _db.UpdateHiddenArena(id, isNowHidden);
             }
         }
 

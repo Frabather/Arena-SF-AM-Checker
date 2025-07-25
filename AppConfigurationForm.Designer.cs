@@ -35,6 +35,9 @@
             undergroundResetBtn = new Button();
             BtnToBeLine = new Button();
             BtnToBeLine2 = new Button();
+            label3 = new Label();
+            allArenaUpgradesToggle = new CheckBox();
+            button2 = new Button();
             SuspendLayout();
             // 
             // label1
@@ -107,11 +110,42 @@
             BtnToBeLine2.TabIndex = 6;
             BtnToBeLine2.UseVisualStyleBackColor = true;
             // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Font = new Font("Segoe UI", 14F);
+            label3.Location = new Point(12, 149);
+            label3.Name = "label3";
+            label3.Size = new Size(226, 25);
+            label3.TabIndex = 7;
+            label3.Text = "Show All Arena Upgrades";
+            // 
+            // allArenaUpgradesToggle
+            // 
+            allArenaUpgradesToggle.AutoSize = true;
+            allArenaUpgradesToggle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            allArenaUpgradesToggle.Location = new Point(249, 136);
+            allArenaUpgradesToggle.Name = "allArenaUpgradesToggle";
+            allArenaUpgradesToggle.Size = new Size(15, 14);
+            allArenaUpgradesToggle.TabIndex = 8;
+            allArenaUpgradesToggle.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            button2.Location = new Point(2, 192);
+            button2.Name = "button2";
+            button2.Size = new Size(385, 10);
+            button2.TabIndex = 9;
+            button2.UseVisualStyleBackColor = true;
+            // 
             // AppConfigurationForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(389, 500);
+            Controls.Add(button2);
+            Controls.Add(allArenaUpgradesToggle);
+            Controls.Add(label3);
             Controls.Add(BtnToBeLine2);
             Controls.Add(BtnToBeLine);
             Controls.Add(undergroundResetBtn);
@@ -134,5 +168,8 @@
         private Button undergroundResetBtn;
         private Button BtnToBeLine;
         private Button BtnToBeLine2;
+        private Label label3;
+        private CheckBox allArenaUpgradesToggle;
+        private Button button2;
     }
 }

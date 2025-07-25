@@ -45,6 +45,14 @@ namespace Arena_SF_AM_Checker
                 );
             ");
 
+            var columns = conn.Query<(int cid, string name, string type, int notnull, object dflt_value, int pk)>("PRAGMA table_info(ArenaUpgrades);");
+
+            bool hasIsHidden = columns.Any(c => c.name.Equals("isHidden", StringComparison.OrdinalIgnoreCase));
+            if (!hasIsHidden)
+                {
+                    conn.Execute("ALTER TABLE ArenaUpgrades ADD COLUMN isHidden INTEGER NOT NULL DEFAULT 0;");
+                }
+
 
             conn.Execute(@"
                 CREATE TABLE IF NOT EXISTS UndergroundUpgrades (
@@ -141,10 +149,24 @@ namespace Arena_SF_AM_Checker
 
             ///////////////////// Parameters
 
-            var countParam = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM AppConfiguration");
-            if (countParam == 0)
+            var parameters = new[]
             {
-                conn.Execute("INSERT INTO AppConfiguration (ParamName, FlgStatus) VALUES ('TwitchDropNotification', 1)");
+                new { Name = "TwitchDropNotification", DefaultValue = 1 },
+                new { Name = "ShowAllArenaUpgrades", DefaultValue = 1 },
+            };
+
+            foreach (var param in parameters)
+            {
+                var exists = conn.ExecuteScalar<int>(
+                    "SELECT COUNT(*) FROM AppConfiguration WHERE ParamName = @ParamName",
+                    new { ParamName = param.Name });
+
+                if (exists == 0)
+                {
+                    conn.Execute(
+                        "INSERT INTO AppConfiguration (ParamName, FlgStatus) VALUES (@ParamName, @FlgStatus)",
+                        new { ParamName = param.Name, FlgStatus = param.DefaultValue });
+                }
             }
 
         }
@@ -161,20 +183,52 @@ namespace Arena_SF_AM_Checker
         {
             using var conn = new SQLiteConnection(_connectionString);
             conn.Execute("UPDATE AppConfiguration SET FlgStatus = @FlgStatus WHERE Id = @id", new { id, FlgStatus });
-
         }
 
+        ///
+
+        public bool IsAllArenaUpgradesEnabled()
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            return conn.ExecuteScalar<int>(
+                "SELECT FlgStatus FROM AppConfiguration WHERE ParamName = 'ShowAllArenaUpgrades' LIMIT 1"
+            ) == 1;
+        }
+
+        public void UpdateAllArenaUpgrades(int id, int FlgStatus)
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            conn.Execute("UPDATE AppConfiguration SET FlgStatus = @FlgStatus WHERE ParamName = 'ShowAllArenaUpgrades'", new { FlgStatus });
+        }
+
+        ///
 
         public IEnumerable<ArenaUpgradeModel> GetAllArena()
         {
             using var conn = new SQLiteConnection(_connectionString);
-            return conn.Query<ArenaUpgradeModel>("SELECT * FROM ArenaUpgrades");
+
+            var checkParametr = IsAllArenaUpgradesEnabled();
+            if (checkParametr)
+            {
+                return conn.Query<ArenaUpgradeModel>("SELECT * FROM ArenaUpgrades WHERE isHidden IN (0,1)");
+            }
+            else
+            {
+                return conn.Query<ArenaUpgradeModel>("SELECT * FROM ArenaUpgrades WHERE isHidden = 0");
+            }
+                
         }
 
         public void UpdateCheckedArena(int id, bool isChecked)
         {
             using var conn = new SQLiteConnection(_connectionString);
             conn.Execute("UPDATE ArenaUpgrades SET IsChecked = @isChecked WHERE Id = @id", new { id, isChecked });
+        }
+
+        public void UpdateHiddenArena(int id, bool isHidden)
+        {
+            using var conn = new SQLiteConnection(_connectionString);
+            conn.Execute("UPDATE ArenaUpgrades SET IsHidden = @IsHidden WHERE Id = @Id", new { Id = id, IsHidden = isHidden ? 1 : 0 });
         }
 
         public IEnumerable<ArenaUpgradeModel> GetAllUnderground()

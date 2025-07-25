@@ -117,7 +117,7 @@ namespace Arena_SF_AM_Checker
                 if (allChecked)
                 {
                     var confirmResultAll = ConfirmDialog.ShowDialogAt(
-                        "You're able to increment all uprades levels. Do you want to proceed?",
+                        "You're able to increment all upgrade levels. Do you want to proceed?",
                         location
                     );
                     if (confirmResultAll == DialogResult.Yes)

@@ -32,27 +32,37 @@ namespace Arena_SF_AM_Checker
             twichDropNotificationToggle.Checked = isTwitchEnabled;
             twichDropNotificationToggle.Text = isTwitchEnabled ? "ON" : "OFF";
 
-            VerifySwitchColor();
+            VerifySwitchColor(twichDropNotificationToggle);
 
             twichDropNotificationToggle.CheckedChanged += (s, e) =>
             {
                 var status = twichDropNotificationToggle.Checked;
                 twichDropNotificationToggle.Text = status ? "ON" : "OFF";
                 _db.UpdateTwitchNotification(1, status ? 1 : 0);
-                VerifySwitchColor();
+                VerifySwitchColor(twichDropNotificationToggle);
+            };
+
+            allArenaUpgradesToggle.Appearance = Appearance.Button;
+            allArenaUpgradesToggle.AutoSize = false;
+            allArenaUpgradesToggle.Size = new Size(75, 45);
+
+            var isAllArenaEnabled = _db.IsAllArenaUpgradesEnabled();
+            allArenaUpgradesToggle.Checked = isAllArenaEnabled;
+            allArenaUpgradesToggle.Text = isAllArenaEnabled ? "ON" : "OFF";
+            VerifySwitchColor(allArenaUpgradesToggle);
+
+            allArenaUpgradesToggle.CheckedChanged += (s, e) =>
+            {
+                var status = allArenaUpgradesToggle.Checked;
+                allArenaUpgradesToggle.Text = status ? "ON" : "OFF";
+                _db.UpdateAllArenaUpgrades(1, status ? 1 : 0); 
+                VerifySwitchColor(allArenaUpgradesToggle);
             };
         }
 
-        private void VerifySwitchColor()
+        private void VerifySwitchColor(CheckBox toggle)
         {
-            if (twichDropNotificationToggle.Checked)
-            {
-                twichDropNotificationToggle.BackColor = Color.Green;
-            }
-            else
-            {
-                twichDropNotificationToggle.BackColor = Color.Red;
-            }
+            toggle.BackColor = toggle.Checked ? Color.Green : Color.Red;
         }
 
         private void button1_Click(object sender, EventArgs e)
